@@ -37,7 +37,9 @@ if not m and re.search(r"<command-name>/(?:[\w-]+:)?voice</command-name>", promp
     a = re.search(r"<command-args>(.*?)</command-args>", prompt, re.S)
     m = re.match(r"\s*(on|off)?\s*(.*)", (a.group(1) if a else "").strip(), re.I | re.S)
 if not m:
-    p = re.match(r"\W*(?:toggle|switch|turn)?\s*(?:the\s+)?voice(?:\s+mode)?\s*(on|off)?\W*$", prompt, re.I)
+    # The phrase may open a longer prompt: "toggle voice mode on and ...", "voice mode off. Now ..."
+    p = re.match(r"\W*(?:toggle|switch|turn)?\s*(?:the\s+)?voice(?:\s+mode)?\s*(on|off)?(?:\W*$|[\s,.;:!]+(?:and|then)\b|[.;:!]\s)",
+                 prompt, re.I)
     if p and (p.group(1) or re.match(r"\W*(toggle|switch)", prompt, re.I)):
         m = re.match(r"(on|off)?(.*)", p.group(1) or "", re.I)
 
