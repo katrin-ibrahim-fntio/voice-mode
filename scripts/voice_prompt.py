@@ -8,7 +8,7 @@ the model picks for the session and is read by speak.py.
 """
 import json, os, re, subprocess, sys
 
-DATA = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.expanduser("~/.claude/plugins/data/voice-mode")
+DATA = os.path.expanduser("~/.claude/plugins/data/voice-mode")  # fixed path, see speak.py
 SESSIONS = f"{DATA}/voice-sessions"
 REMINDER = ("Voice mode is on: this reply is read aloud in full. Write for the ear: a few short "
             "sentences, result first, no code blocks, file paths, lists, headings, tables or symbols. "

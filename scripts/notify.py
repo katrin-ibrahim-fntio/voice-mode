@@ -4,7 +4,7 @@ question dialog). Silent for sessions without voice mode and when muted.
 """
 import json, os, re, socket, sys
 
-DATA = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.expanduser("~/.claude/plugins/data/voice-mode")
+DATA = os.path.expanduser("~/.claude/plugins/data/voice-mode")  # fixed path, see speak.py
 
 if os.path.exists(f"{DATA}/.mute"):
     sys.exit(0)

@@ -8,7 +8,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DATA="${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/voice-mode}"
+DATA="$HOME/.claude/plugins/data/voice-mode"  # fixed path; the hooks and launch agents use the same
 AGENTS="$HOME/Library/LaunchAgents"
 MODEL_BASE="https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0"
 

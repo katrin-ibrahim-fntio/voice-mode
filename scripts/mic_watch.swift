@@ -12,8 +12,7 @@ import CoreAudio
 import Carbon.HIToolbox
 import ApplicationServices
 
-let dataDir = ProcessInfo.processInfo.environment["CLAUDE_PLUGIN_DATA"]
-    ?? NSString(string: "~/.claude/plugins/data/voice-mode").expandingTildeInPath
+let dataDir = NSString(string: "~/.claude/plugins/data/voice-mode").expandingTildeInPath
 let muteFile = dataDir + "/.mute"
 let autoSendFile = dataDir + "/.autosend"
 

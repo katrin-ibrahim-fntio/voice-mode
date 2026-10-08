@@ -6,7 +6,9 @@ Mute everything: touch <data>/.mute  (rm it to unmute; Option+M does the same)
 """
 import json, os, re, socket, subprocess, sys
 
-DATA = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.expanduser("~/.claude/plugins/data/voice-mode")
+# Fixed path, not CLAUDE_PLUGIN_DATA: that varies with how the plugin was installed, and the
+# daemon and launch agents must find the same dir.
+DATA = os.path.expanduser("~/.claude/plugins/data/voice-mode")
 MAX_CHARS = 1500
 
 if os.path.exists(f"{DATA}/.mute"):

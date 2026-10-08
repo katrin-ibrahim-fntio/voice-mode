@@ -13,7 +13,7 @@ import numpy as np
 import sounddevice as sd
 from kokoro_onnx import Kokoro
 
-DATA = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.expanduser("~/.claude/plugins/data/voice-mode")
+DATA = os.path.expanduser("~/.claude/plugins/data/voice-mode")  # fixed path, see speak.py
 SOCK = f"{DATA}/speak.sock"
 RATE = 24000  # Kokoro's output rate
 
