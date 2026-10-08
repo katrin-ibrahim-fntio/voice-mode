@@ -2,7 +2,7 @@
 """Notification hook: say out loud when a voice-mode session is waiting on you (permission prompt,
 question dialog). Silent for sessions without voice mode and when muted.
 """
-import json, os, socket, sys
+import json, os, re, socket, sys
 
 DATA = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.expanduser("~/.claude/plugins/data/voice-mode")
 
@@ -19,8 +19,10 @@ name = open(flag).read().strip() or "Claude"
 message = (data.get("message") or "").strip()
 if not message:
     sys.exit(0)
-# "Claude needs your permission to use Bash" -> "Voice setup needs your permission to use Bash"
-text = message.replace("Claude", name, 1) if message.startswith("Claude") else f"{name}: {message}"
+# "Claude needs your permission to use Bash" -> "Voice setup is waiting for your approval to use Bash."
+# The prompt is answered with a click, so the wording never suggests speaking an answer.
+m = re.match(r"Claude needs your permission to (.+)", message)
+text = f"{name} is waiting for your approval to {m.group(1).rstrip('.')}." if m else f"{name} is waiting for you: {message}"
 try:
     with socket.socket(socket.AF_UNIX) as c:
         c.connect(f"{DATA}/speak.sock")
