@@ -1,7 +1,7 @@
 {
   "name": "voice-mode",
   "displayName": "Voice Mode",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read Claude Code replies aloud with local Kokoro TTS. /voice turns it on per session; replies are then written to be heard.",
   "author": { "name": "Katrin Ibrahim" },
   "repository": "https://github.com/katrin-ibrahim-fntio/voice-mode",
