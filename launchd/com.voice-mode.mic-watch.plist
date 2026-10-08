@@ -8,11 +8,6 @@
 	<array>
 		<string>__DATA__/mic_watch</string>
 	</array>
-	<key>EnvironmentVariables</key>
-	<dict>
-		<key>CLAUDE_PLUGIN_DATA</key>
-		<string>__DATA__</string>
-	</dict>
 	<key>RunAtLoad</key>
 	<true/>
 	<key>KeepAlive</key>

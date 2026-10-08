@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""UserPromptSubmit hook: stop any reply still being spoken, and handle /voice.
+"""UserPromptSubmit hook: stop any reply still being spoken, and handle /speak.
 
 /speak toggles voice mode for this session; "toggle speak" or "toggle voice mode" does the same, so
 dictation can switch it. While voice mode is on, every prompt gets a one-line reminder to write
@@ -30,7 +30,7 @@ prompt = data.get("prompt") or ""
 # A toggle is "/speak" (or "/voice-mode:speak"), the skill's command-name tags, or the phrase
 # "toggle voice mode", possibly opening a longer prompt ("toggle voice mode and ..."). "/voice" is
 # Claude Code's own dictation toggle in the terminal, so not that.
-toggle = (re.match(r"\s*/(?:[\w-]+:)?speak\b", prompt, re.I)
+toggle = (re.match(r"\s*/(?:[\w-]+:)?speak(?:\s|$)", prompt, re.I)
           or re.search(r"<command-name>/(?:[\w-]+:)?speak</command-name>", prompt)
           or re.match(r"\W*(?:toggle|switch)\s+(?:the\s+)?(?:voice(?:\s+mode)?|speak(?:ing)?|speech|talk(?:ing)?)"
                       r"(?:\W*$|[\s,.;:!]+(?:and|then)\b|[.;:!]\s)", prompt, re.I))

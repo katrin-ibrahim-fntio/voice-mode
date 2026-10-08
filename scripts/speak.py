@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stop hook: read the reply aloud when voice mode is on for this session (toggled by /voice, see
+"""Stop hook: read the reply aloud when voice mode is on for this session (toggled by /speak, see
 voice_prompt.py). Sends the text to the Kokoro daemon; falls back to macOS `say`.
 
 Mute everything: touch <data>/.mute  (rm it to unmute; Option+M does the same)

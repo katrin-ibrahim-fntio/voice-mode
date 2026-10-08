@@ -9,11 +9,6 @@
 		<string>__DATA__/kokoro/.venv/bin/python</string>
 		<string>__DATA__/kokoro_daemon.py</string>
 	</array>
-	<key>EnvironmentVariables</key>
-	<dict>
-		<key>CLAUDE_PLUGIN_DATA</key>
-		<string>__DATA__</string>
-	</dict>
 	<key>RunAtLoad</key>
 	<true/>
 	<key>KeepAlive</key>

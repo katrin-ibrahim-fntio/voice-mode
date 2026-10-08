@@ -6,7 +6,7 @@
     {
       "name": "voice-mode",
       "source": "./",
-      "description": "Read Claude Code replies aloud with local Kokoro TTS. /voice turns it on per session."
+      "description": "Read Claude Code replies aloud with local Kokoro TTS. /speak toggles it per session; replies are then written to be heard."
     }
   ]
 }

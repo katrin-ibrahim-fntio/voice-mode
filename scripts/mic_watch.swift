@@ -2,11 +2,12 @@
 // - stops speech the moment the microphone turns on (dictation starts)
 // - Option+M toggles mute by creating/removing <data>/.mute
 // - optional (`touch <data>/.dictation-key`): Option+D, or a tap on Right Shift alone, presses the
-//   dictation (mic) button of the Claude desktop app, which has no shortcut of its own. Needs the
-//   Accessibility permission; after a rebuild, remove and re-add mic_watch there.
+//   dictation (mic) button of the Claude desktop app, which has no shortcut of its own.
 //   `mic_watch --dump` lists the app's buttons.
-// - optional: after dictation ends and a dictation app (e.g. Typeless) has pasted the text, presses
-//   Enter in the apps below. Enabled by `touch <data>/.autosend`.
+// - optional (`touch <data>/.autosend`): after dictation ends and a dictation app (e.g. Typeless)
+//   has pasted the text, presses Enter in the apps below.
+// The two optional helpers need the Accessibility permission, asked for at start when either flag
+// file exists; after a rebuild, remove and re-add mic_watch there, the old grant no longer applies.
 import Cocoa
 import CoreAudio
 import Carbon.HIToolbox
@@ -78,12 +79,12 @@ func log(_ s: String) {
 
 func pressDictation() {
     guard let app = claudeApp() else {
-        log("Option+D: Claude desktop app not running")
+        log("dictation key: Claude desktop app not running")
         run("/usr/bin/afplay", ["/System/Library/Sounds/Basso.aiff"]); return
     }
     var buttons: [(AXUIElement, String)] = []
     axButtons(app, 0, &buttons)
-    log("Option+D: trusted=\(AXIsProcessTrusted()) buttons=\(buttons.count)")
+    log("dictation key: trusted=\(AXIsProcessTrusted()) buttons=\(buttons.count)")
     // The composer's mic is a toggle (AXCheckBox) labelled "Press and hold to record" while idle and
     // differently while recording; session titles are plain buttons, so only toggles are considered.
     let wanted = try! NSRegularExpression(pattern: "^AXCheckBox:.*(record|dictat)", options: .caseInsensitive)
@@ -140,8 +141,11 @@ func pressEnter() {
     }
 }
 
-// Option+D and the optional auto-Enter both need Accessibility; ask once at start.
-_ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary)
+// Only the optional helpers need Accessibility; ask at start when one of them is enabled.
+let dictationKeyFile = dataDir + "/.dictation-key"
+if FileManager.default.fileExists(atPath: dictationKeyFile) || FileManager.default.fileExists(atPath: autoSendFile) {
+    _ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary)
+}
 
 Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
     let on = micRunning()
@@ -179,33 +183,33 @@ InstallEventHandler(GetApplicationEventTarget(), { _, event, _ in
     var hk = EventHotKeyID()
     GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
                       nil, MemoryLayout<EventHotKeyID>.size, nil, &hk)
-    if hk.id == 2 { pressDictation() } else { toggleMute() }
+    if hk.id == 2 { if dictationKeyEnabled() { pressDictation() } } else { toggleMute() }
     return noErr
 }, 1, &spec, nil, nil)
 RegisterEventHotKey(UInt32(kVK_ANSI_M), UInt32(optionKey),
                     EventHotKeyID(signature: OSType(0x564d4f44), id: 1),
                     GetApplicationEventTarget(), 0, &hotKeyRef)
-// Optional dictation key, enabled by `touch <data>/.dictation-key`: Option+D, or a tap on Right
-// Shift alone (pressed and released within half a second, no other key in between), presses the
-// desktop app's mic button. Right Shift is skipped while Typeless runs, which uses the same key.
+// Optional dictation key, enabled by `touch <data>/.dictation-key` (checked on each press, so no
+// restart is needed): Option+D, or a tap on Right Shift alone (pressed and released within half a
+// second, no other key in between), presses the desktop app's mic button. Right Shift is skipped
+// while Typeless runs, which uses the same key.
+func dictationKeyEnabled() -> Bool { FileManager.default.fileExists(atPath: dictationKeyFile) }
 var dictateKeyRef: EventHotKeyRef?
 var rightShiftDownAt: Date?
-if FileManager.default.fileExists(atPath: dataDir + "/.dictation-key") {
-    RegisterEventHotKey(UInt32(kVK_ANSI_D), UInt32(optionKey),
-                        EventHotKeyID(signature: OSType(0x564d4f44), id: 2),
-                        GetApplicationEventTarget(), 0, &dictateKeyRef)
-    NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { ev in
-        guard ev.keyCode == UInt16(kVK_RightShift) else { rightShiftDownAt = nil; return }
-        if ev.modifierFlags.contains(.shift) {
-            rightShiftDownAt = Date()
-        } else if let t = rightShiftDownAt {
-            rightShiftDownAt = nil
-            let typeless = NSWorkspace.shared.runningApplications.contains { $0.localizedName?.lowercased() == "typeless" }
-            if Date().timeIntervalSince(t) < 0.5 && !typeless { pressDictation() }
-        }
+RegisterEventHotKey(UInt32(kVK_ANSI_D), UInt32(optionKey),
+                    EventHotKeyID(signature: OSType(0x564d4f44), id: 2),
+                    GetApplicationEventTarget(), 0, &dictateKeyRef)
+NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { ev in
+    guard ev.keyCode == UInt16(kVK_RightShift) else { rightShiftDownAt = nil; return }
+    if ev.modifierFlags.contains(.shift) {
+        rightShiftDownAt = Date()
+    } else if let t = rightShiftDownAt {
+        rightShiftDownAt = nil
+        let typeless = NSWorkspace.shared.runningApplications.contains { $0.localizedName?.lowercased() == "typeless" }
+        if Date().timeIntervalSince(t) < 0.5 && !typeless && dictationKeyEnabled() { pressDictation() }
     }
-    NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { _ in rightShiftDownAt = nil }
 }
+NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { _ in rightShiftDownAt = nil }
 
 NSApplication.shared.setActivationPolicy(.accessory)
 NSApplication.shared.run()
