@@ -1,14 +1,14 @@
 # Voice Mode for Claude Code
 
-Replies read aloud, per session, with a local voice. Type `/voice` in a session and from then on its replies are written to be heard (short, no code, paths or lists) and spoken in full with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) running on your Mac. Nothing leaves the machine.
+Replies read aloud, per session, with a local voice. Type `/speak` in a session and from then on its replies are written to be heard (short, no code, paths or lists) and spoken in full with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) running on your Mac. Nothing leaves the machine.
 
-- `/voice` toggles it for the current session; `/voice off`, `/voice on <name>` set it. Saying "toggle voice mode" or "voice mode off" works too, for dictation.
-- Other sessions stay silent until you turn them on. Each voice session gets a short name (the model picks one for what it's working on); when the speaking session changes you hear a chime and "New reply from <name>".
+- `/speak` toggles it for the current session. Saying "toggle voice mode" works too, for dictation.
+- Other sessions stay silent until you turn them on. Each voice session gets a short name (the model picks one for what it's working on; ask it to rename); when the speaking session changes you hear a chime and "New reply from <name>".
 - Replies from several sessions queue and play in order. Sending a message stops speech and drops the queue, and so does turning your microphone on (dictation).
 - A voice session also says when it's waiting for a permission or an answer.
 - Option+M mutes everything. Falls back to macOS `say` if the speaker daemon isn't running.
 
-macOS only. Pairs well with Claude Code's built-in voice input or a dictation app such as Typeless.
+macOS only. Input is yours to choose: Claude Code's built-in voice input in the terminal, a dictation app such as Typeless, or macOS Dictation. Optional, off by default: `touch ~/.claude/plugins/data/voice-mode/.dictation-key` makes a tap on Right Shift (or Option+D) press the Claude desktop app's mic button, which has no shortcut of its own.
 
 ## Install
 
@@ -22,7 +22,7 @@ macOS only. Pairs well with Claude Code's built-in voice input or a dictation ap
    bash ~/.claude/plugins/cache/voice-mode/voice-mode/*/scripts/setup.sh
    ```
    It creates a Python environment with Kokoro, downloads the model (about 340 MB), compiles the mic watcher and installs two launch agents under your user: the speaker daemon and the mic watcher. Everything lives in `~/.claude/plugins/data/voice-mode/`.
-3. Start a new session and type `/voice`.
+3. Start a new session and type `/speak`.
 
 After a plugin update, run the setup again so the daemon copy matches.
 
@@ -46,7 +46,7 @@ Three hooks and a daemon:
 - `scripts/speak.py` (Stop): strips code blocks, paths and markdown from the reply, caps it at ~1,500 characters, and sends it to the daemon.
 - `scripts/notify.py` (Notification): speaks permission prompts for voice sessions.
 - `scripts/kokoro_daemon.py`: keeps the model loaded, speaks sentence by sentence while synthesising the next one, queues replies, announces session switches.
-- `scripts/mic_watch.swift`: stops speech when the mic turns on, Option+M mute, optional auto-Enter.
+- `scripts/mic_watch.swift`: stops speech when the mic turns on, Option+M mute, and the optional dictation key and auto-Enter helpers. It needs the Accessibility permission; after a rebuild (setup re-run), remove and re-add it there.
 
 ## Notes
 
