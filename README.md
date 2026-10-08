@@ -2,7 +2,7 @@
 
 Replies read aloud, per session, with a local voice. Type `/speak` in a session and from then on its replies are written to be heard (short, no code, paths or lists) and spoken in full with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) running on your Mac. Nothing leaves the machine.
 
-- `/speak` toggles it for the current session. Saying "toggle voice mode" works too, for dictation.
+- `/speak` toggles it for the current session. Saying "toggle speak" or "toggle voice mode" works too, for dictation.
 - Other sessions stay silent until you turn them on. Each voice session gets a short name (the model picks one for what it's working on; ask it to rename); when the speaking session changes you hear a chime and "New reply from <name>".
 - Replies from several sessions queue and play in order. Sending a message stops speech and drops the queue, and so does turning your microphone on (dictation).
 - A voice session also says when it's waiting for a permission or an answer.

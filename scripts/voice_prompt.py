@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """UserPromptSubmit hook: stop any reply still being spoken, and handle /voice.
 
-/speak toggles voice mode for this session; "toggle voice mode" spoken or typed does the same, so
+/speak toggles voice mode for this session; "toggle speak" or "toggle voice mode" does the same, so
 dictation can switch it. While voice mode is on, every prompt gets a one-line reminder to write
 for the ear, so the style survives context compaction. The flag file per session holds the name
 the model picks for the session and is read by speak.py.
@@ -32,8 +32,8 @@ prompt = data.get("prompt") or ""
 # Claude Code's own dictation toggle in the terminal, so not that.
 toggle = (re.match(r"\s*/(?:[\w-]+:)?speak\b", prompt, re.I)
           or re.search(r"<command-name>/(?:[\w-]+:)?speak</command-name>", prompt)
-          or re.match(r"\W*(?:toggle|switch)\s+(?:the\s+)?voice(?:\s+mode)?(?:\W*$|[\s,.;:!]+(?:and|then)\b|[.;:!]\s)",
-                      prompt, re.I))
+          or re.match(r"\W*(?:toggle|switch)\s+(?:the\s+)?(?:voice(?:\s+mode)?|speak(?:ing)?|speech|talk(?:ing)?)"
+                      r"(?:\W*$|[\s,.;:!]+(?:and|then)\b|[.;:!]\s)", prompt, re.I))
 
 if toggle:
     if not os.path.exists(flag):
