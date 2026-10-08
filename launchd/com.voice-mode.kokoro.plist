@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.voice-mode.kokoro</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>__DATA__/kokoro/.venv/bin/python</string>
+		<string>__DATA__/kokoro_daemon.py</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>CLAUDE_PLUGIN_DATA</key>
+		<string>__DATA__</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>__DATA__/kokoro_daemon.log</string>
+</dict>
+</plist>

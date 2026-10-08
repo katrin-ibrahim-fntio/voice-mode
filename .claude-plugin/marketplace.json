@@ -1,0 +1,12 @@
+{
+  "name": "voice-mode",
+  "owner": { "name": "Katrin Ibrahim" },
+  "description": "Voice Mode for Claude Code: replies read aloud with local Kokoro TTS.",
+  "plugins": [
+    {
+      "name": "voice-mode",
+      "source": "./",
+      "description": "Read Claude Code replies aloud with local Kokoro TTS. /voice turns it on per session."
+    }
+  ]
+}
