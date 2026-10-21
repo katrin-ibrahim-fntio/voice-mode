@@ -7,7 +7,7 @@ than the last one is announced with a chime and "New reply from <name>".
 SIGUSR1 stops the reply being spoken and drops the queue.
 Run with the venv python that setup.sh creates under the data dir.
 """
-import json, os, queue, re, signal, socket, threading, time
+import json, os, queue, re, signal, socket, subprocess, threading, time, traceback
 
 import numpy as np
 import sounddevice as sd
@@ -68,6 +68,19 @@ def chime():
     return np.concatenate(notes).astype("float32")
 
 
+def open_stream(rate):
+    """PortAudio caches the device list at init, so after the output device changes opening fails;
+    reinitializing picks up the current devices and default output."""
+    try:
+        stream = sd.OutputStream(samplerate=rate, channels=1, dtype="float32")
+    except sd.PortAudioError:
+        sd._terminate()
+        sd._initialize()
+        stream = sd.OutputStream(samplerate=rate, channels=1, dtype="float32")
+    stream.start()
+    return stream
+
+
 def play(text, g, intro=""):
     cancel = threading.Event()
     current[0] = cancel
@@ -94,6 +107,21 @@ def play(text, g, intro=""):
 
     threading.Thread(target=produce, daemon=True).start()
     stream = None
+
+    def write(block):
+        nonlocal stream
+        try:
+            stream.write(block)
+        except sd.PortAudioError:
+            # The device went away mid-reply: drop the dead stream and go on through the new default output.
+            rate, dead, stream = int(stream.samplerate), stream, None
+            try:
+                dead.close()
+            except Exception:
+                pass
+            stream = open_stream(rate)
+            stream.write(block)
+
     try:
         while not stopped():
             item = q.get()
@@ -101,8 +129,7 @@ def play(text, g, intro=""):
                 break
             samples, rate = item
             if stream is None:
-                stream = sd.OutputStream(samplerate=rate, channels=1, dtype="float32")
-                stream.start()
+                stream = open_stream(rate)
             # Fade the chunk's last 10 ms so it never ends on a sharp edge.
             fade = min(len(samples), rate // 100)
             samples = np.array(samples, dtype="float32")
@@ -111,15 +138,18 @@ def play(text, g, intro=""):
                 if stopped():
                     # Interrupted: ramp the next 50 ms down instead of cutting mid-wave.
                     tail = samples[i:i + 1200]
-                    stream.write((tail * np.linspace(1, 0, len(tail), dtype="float32")).reshape(-1, 1))
+                    write((tail * np.linspace(1, 0, len(tail), dtype="float32")).reshape(-1, 1))
                     break
-                stream.write(samples[i:i + 2400].reshape(-1, 1))
+                write(samples[i:i + 2400].reshape(-1, 1))
     finally:
         if stream:
             # Closing right after the last sample pops the speaker; let it settle on silence first.
-            stream.write(np.zeros((int(stream.samplerate * (0.05 if stopped() else 0.3)), 1), dtype="float32"))
-            stream.stop()
-            stream.close()
+            try:
+                stream.write(np.zeros((int(stream.samplerate * (0.05 if stopped() else 0.3)), 1), dtype="float32"))
+                stream.stop()
+                stream.close()
+            except Exception:
+                pass
         current[0] = None
         last_end[0] = time.time()
 
@@ -131,7 +161,12 @@ def player():
             continue
         intro = f"New reply from {name}." if name and name != last_name[0] else ""
         last_name[0] = name
-        play(text, g, intro)
+        try:
+            play(text, g, intro)
+        except Exception:
+            # The thread must outlive any audio failure, or every later reply is silently dropped.
+            traceback.print_exc()
+            subprocess.run(["say", text])
 
 
 def handle(conn):
