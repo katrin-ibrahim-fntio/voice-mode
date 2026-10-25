@@ -166,7 +166,13 @@ def player():
         except Exception:
             # The thread must outlive any audio failure, or every later reply is silently dropped.
             traceback.print_exc()
-            subprocess.run(["say", text])
+            p = subprocess.Popen(["say", text])
+            while p.poll() is None:
+                if gen[0] != g:
+                    p.terminate()
+                    p.wait()
+                    break
+                time.sleep(0.1)
 
 
 def handle(conn):
